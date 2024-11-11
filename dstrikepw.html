@@ -1,0 +1,93 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Desert Strike Mega Drive/Genesis password generator (Sega Mega Drive/Genesis)</title>
+</head>
+<body onload="updatePw()">
+
+<h1>Desert Strike Mega Drive/Genesis password generator</h1>
+
+<p>Here's some javascript to make passwords for Desert Strike on the Mega Drive</p>
+
+<p>Passwords use a simple 26 character alphabet with a cipher ('QMZRHLAJOETBKWVIPFYSCNXGUD'). 1st and 6th characters govern the level (smallest digit of score + 4, then offset forwards and back into the cipher, +/- (level-1)), characters 2-5 store the score in thousands. Final character is a mod 26 checkdigit.</p>
+
+<p>Score cannot be more than 2mil per level.</p>
+
+<form name="cheat" action="javascript:updatePw()">
+<label for="score">Wanted Score:</label>
+<input oninput="updatePw()" onchange="updatePw()" name="score" min="0" class="form-control" type="number" value="1337">000</br>
+<label for="level">Wanted Campaign:</label>
+<select onchange="updatePw()" name="level" id="level">
+  <option value="1">Campaign #1 AIR SUPERIORITY</option>
+  <option value="2" selected>Campaign #2 SCUD BUSTER</option>
+  <option value="3">Campaign #3 EMBASSY CITY</option>
+  <option value="4">Campaign #4 NUCLEAR STORM</option>
+  <option value="5">Campaign #5 WIN SCREEN</option>
+</select>
+</form>
+<hr> 
+
+<form name="pw">Password: <input type="text" readonly name="pw" size="10"></form>
+
+<p>Special Passwords:</p>
+<a href='#' onclick="document.cheat.score.value = 5; document.cheat.level.value = 2; updatePw(); return false;">5 Lives Cheat</a></br>
+<a href='#' onclick="document.cheat.score.value = 6; document.cheat.level.value = 2; updatePw(); return false;">10 Lives Cheat</a></br>
+<a href='#' onclick="document.cheat.score.value = 1999; document.cheat.level.value = 2; updatePw(); return false;">Max score after Campaign 1</a></br>
+<a href='#' onclick="document.cheat.score.value = 3999; document.cheat.level.value = 3; updatePw(); return false;">Max score after Campaign 2</a></br>
+<a href='#' onclick="document.cheat.score.value = 5999; document.cheat.level.value = 4; updatePw(); return false;">Max score after Campaign 3</a></br>
+<a href='#' onclick="document.cheat.score.value = 7999; document.cheat.level.value = 5; updatePw(); return false;">Max score after Campaign 4</a></br>
+<p>Note: these particular values (5 and 6 thousand points) are hardcoded to be recognised as cheats. Once you enter them, it affects the starting number of lives, but will fail (won't set the new campaign) and you can subsequently enter a new password while keeping this new number of starting lives.</p>
+
+Check out <a href='https://retroachievements.org/game/6'>RetroAchievements</a> to get achievements while playing this game!
+
+<script>	
+
+	var cipher="QMZRHLAJOETBKWVIPFYSCNXGUD";
+
+function getScoreStr(v,o) {
+	var out = "";
+	for(var i=0; i<4; i++) {
+		var lsd = v % 10;
+		v -= lsd;
+		v /= 10;
+		out = cipher[o+lsd] + out;
+	}
+	return out;
+}
+
+
+function strToSum(str)
+{
+	var sum = 0;
+	for(var i=0; i<str.length; i++)
+		sum += (str[i].charCodeAt(0) - 'A'.charCodeAt(0));
+	return sum;
+}
+
+function getCheckDigit(str) {
+	var total = strToSum(str);
+	return ( 26 - (total % 26) ) % 26;
+}
+
+function getPw() {
+	var cipherOffset = (document.cheat.level.value >= 2) ? (4 * (document.cheat.level.value-2)) : 0;
+
+	document.cheat.score.value = ("0000" + document.cheat.score.value).substr(-4,4);
+
+	var lowestDigit = document.cheat.score.value % 10;
+	var level = document.cheat.level.value*1;
+
+	var lev1 = cipher[(lowestDigit+4)+(level-1)];
+	var lev2 = cipher[(lowestDigit+4)-(level-1)];
+
+	var scoreStr = getScoreStr(document.cheat.score.value, cipherOffset);
+	var chkDigit = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[getCheckDigit(lev1 + scoreStr + lev2)];
+
+	return lev1 + scoreStr + lev2 + chkDigit;
+}
+
+function updatePw() {
+	document.pw.pw.value=getPw();
+	document.pw.pw.style.background = ( document.cheat.score.value >= (document.cheat.level.value-1) * 2000 ) ? "red" : "";
+}
+
+</script>
+</body></html>
